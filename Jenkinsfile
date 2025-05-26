@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://${{secrets.Token}}@github.com/yashwanthkumars/my-static-site.git'
+                git branch: 'main', url: 'https://github.com/yashwanthkumars/my-static-site.git'
             }
         }
 
