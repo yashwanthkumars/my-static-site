@@ -4,13 +4,13 @@ pipeline {
     environment {
         DEPLOY_USER = 'Yashwanth'
         DEPLOY_HOST = '20.57.34.82'
-        DEPLOY_PASS = credentials('Ykumar@123456789')
+        DEPLOY_PASS = credentials('vm-password')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yashwanthkumars/my-static-site.git'
+                git branch: 'main', url: 'https://${{secrets.Token}}@github.com/yashwanthkumars/my-static-site.git'
             }
         }
 
