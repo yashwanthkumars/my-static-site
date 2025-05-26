@@ -4,7 +4,7 @@ pipeline {
     environment {
         DEPLOY_USER = 'Yashwanth'  // Replace with your VM username
         DEPLOY_HOST = '20.57.34.82' // Replace with your VM's public IP
-        DEPLOY_PASS = credentials('Ykumar@123456789') // Jenkins credentials ID
+        DEPLOY_PASS = credentials('vm-password') // Jenkins credentials ID
     }
 
     stages {
