@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        DEPLOY_USER = 'Yashwanth'  // Replace with your VM username
-        DEPLOY_HOST = '20.57.34.82' // Replace with your VM's public IP
-        DEPLOY_PASS = credentials('vm-password') // Jenkins credentials ID
+        DEPLOY_USER = 'Yashwanth'
+        DEPLOY_HOST = '20.57.34.82'
+        DEPLOY_PASS = credentials('Ykumar@123456789')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/yashwanthkumars/my-static-site.git'
+                git branch: 'main', url: 'https://github.com/yashwanthkumars/my-static-site.git'
             }
         }
 
