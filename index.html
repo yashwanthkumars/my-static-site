@@ -62,7 +62,7 @@
             </tbody>
         </table>
         <div class="mb-3 text-end">
-            <button class="btn btn-outline-primary btn-sm me-2" id="exportBtn">Export</button>
+            <button class="btn btn-outline-primary btn-sm me-2" id="exportBtn">Export CSV</button>
             <button class="btn btn-outline-success btn-sm ms-2" id="printBtn">Print</button>
         </div>
     </div>
@@ -189,14 +189,6 @@
             }
         };
 
-        // Add export/print buttons (no import)
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = 'mb-3 text-end';
-        controlsDiv.innerHTML = `
-            <button class="btn btn-outline-primary btn-sm me-2" id="exportBtn">Export CSV</button>
-            <button class="btn btn-outline-success btn-sm ms-2" id="printBtn">Print</button>
-        `;
-        document.querySelector('.container').insertBefore(controlsDiv, document.querySelector('#selectedDateDisplay'));
         document.getElementById('exportBtn').onclick = exportAttendanceCSV;
         document.getElementById('printBtn').onclick = function() {
             window.print();
