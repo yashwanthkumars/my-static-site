@@ -53,6 +53,7 @@
                     <th>#</th>
                     <th>Name</th>
                     <th>Status</th>
+                    <th></th> <!-- Empty header for delete button -->
                 </tr>
             </thead>
             <tbody id="attendanceTable">
@@ -103,10 +104,20 @@
             table.innerHTML = '';
             count = 0;
             const attendanceData = attendanceDataByDate[selectedDate] || [];
-            attendanceData.forEach(({ name, status }) => {
+            attendanceData.forEach(({ name, status }, idx) => {
                 count++;
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${count}</td><td>${name}</td><td>${status}</td>`;
+                // Add delete button
+                const deleteCell = document.createElement('td');
+                deleteCell.innerHTML = `<button class="btn btn-outline-danger btn-sm" title="Delete"><span style="font-size:1.2em;">&#128465;</span></button>`;
+                deleteCell.style.textAlign = 'center';
+                deleteCell.querySelector('button').onclick = function() {
+                    attendanceData.splice(idx, 1);
+                    localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
+                    renderTable();
+                };
+                row.appendChild(deleteCell);
                 table.appendChild(row);
             });
         }
