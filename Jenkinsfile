@@ -2,23 +2,17 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node_24.1.0'  // Must match the name in Global Tool Configuration
+        nodejs 'node_24.1.0' // Ensure this matches your Jenkins NodeJS tool name
     }
 
     environment {
         DEPLOY_USER = 'Yashwanth'
         DEPLOY_HOST = '20.57.34.82'
         DEPLOY_PASS = credentials('vm-password')
+        DEPLOY_PATH = '/var/www/html/'
     }
 
     stages {
-        stage('Check Versions') {  
-            steps {
-                sh 'node -v'
-                sh 'npm -v'
-            } 
-        }
-
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/yashwanthkumars/my-static-site.git'
@@ -33,7 +27,7 @@ pipeline {
 
         stage('Lint') {
             steps {
-                sh 'npm run lint || true' // Allow lint to fail without failing the pipeline
+                sh 'npm run lint || true'
             }
         }
 
@@ -46,7 +40,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    sshpass -p "$DEPLOY_PASS" scp -o StrictHostKeyChecking=no -r * $DEPLOY_USER@$DEPLOY_HOST:/var/www/html/
+                    sshpass -p "$DEPLOY_PASS" scp -o StrictHostKeyChecking=no -r index.html $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
                 '''
             }
         }
