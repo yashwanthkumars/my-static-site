@@ -1,4 +1,4 @@
-// Express + SQLite backend for Devtools Employee Attendance
+// Express + SQLite backend for Employee Attendance
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
@@ -9,6 +9,7 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname)));
 
 // Initialize SQLite DB
 const db = new sqlite3.Database('./attendance.db', (err) => {
@@ -19,11 +20,7 @@ const db = new sqlite3.Database('./attendance.db', (err) => {
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS employees (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        student_id TEXT,
-        mother_name TEXT,
-        father_name TEXT,
-        guardian_phone TEXT
+        name TEXT NOT NULL
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS attendance (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,9 +30,6 @@ db.serialize(() => {
         FOREIGN KEY(employee_id) REFERENCES employees(id)
     )`);
 });
-
-// Serve static files (frontend)
-app.use(express.static(path.join(__dirname)));
 
 // Pre-populate employees if table is empty
 const defaultEmployees = [
@@ -56,19 +50,6 @@ db.all('SELECT COUNT(*) as count FROM employees', [], (err, rows) => {
         defaultEmployees.forEach(name => stmt.run(name));
         stmt.finalize();
     }
-});
-
-// Register employee
-app.post('/api/employees', (req, res) => {
-    const { name, student_id, mother_name, father_name, guardian_phone } = req.body;
-    db.run(
-        `INSERT INTO employees (name, student_id, mother_name, father_name, guardian_phone) VALUES (?, ?, ?, ?, ?)`,
-        [name, student_id, mother_name, father_name, guardian_phone],
-        function (err) {
-            if (err) return res.status(500).json({ error: err.message });
-            res.json({ id: this.lastID });
-        }
-    );
 });
 
 // Get all employees
