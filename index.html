@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Attendance</title>
+    <title>Devtools Employee Attendance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -14,29 +14,37 @@
         }
         .container {
             background: rgba(255,255,255,0.92);
-            border-radius: 12px;
+            border-radius: 24px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+        table {
+            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container py-5">
-        <h1 class="mb-4 text-center">Employee Attendance</h1>
-        <form id="dateForm" class="row g-3 mb-4 align-items-center">
+        <h1 class="mb-4 text-center">Devtools Employee Attendance</h1>
+        <form id="dateForm" class="row g-3 mb-4 align-items-center justify-content-center">
             <div class="col-md-4">
                 <input type="date" class="form-control" id="attendanceDate" required>
             </div>
-            <div class="col-md-8">
-                <button type="submit" class="btn btn-secondary">Select Date</button>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary w-100">Select Date</button>
             </div>
         </form>
-        <form id="attendanceForm" class="row g-3 mb-4">
-            <div class="col-md-6">
+        <form id="attendanceForm" class="row g-3 mb-4 align-items-center justify-content-center">
+            <div class="col-md-5">
                 <select class="form-select" id="employeeName" required>
                     <option value="" disabled selected>Select employee name</option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <select class="form-select" id="attendanceStatus" required>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
@@ -61,7 +69,26 @@
         </table>
     </div>
     <script>
+        const employees = [
+            'Alice Johnson',
+            'Bob Smith',
+            'Charlie Brown',
+            'David Lee',
+            'Eva Green',
+            'Yashwanth Kumar',
+            'Priya Patel',
+            'Ravi Kumar',
+            'Samantha Ray',
+            'Zara Ali'
+        ];
         const employeeSelect = document.getElementById('employeeName');
+        employees.forEach(emp => {
+            const option = document.createElement('option');
+            option.value = emp;
+            option.textContent = emp;
+            employeeSelect.appendChild(option);
+        });
+
         const dateForm = document.getElementById('dateForm');
         const attendanceDateInput = document.getElementById('attendanceDate');
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
@@ -69,27 +96,21 @@
         const table = document.getElementById('attendanceTable');
         let count = 0;
         let selectedDate = '';
+        let attendanceDataByDate = {};
 
-        // Fetch employee list from backend
-        async function loadEmployees() {
-            const res = await fetch('/api/employees');
-            const employees = await res.json();
-            employeeSelect.innerHTML = '<option value="" disabled selected>Select employee name</option>';
-            employees.forEach(emp => {
-                const option = document.createElement('option');
-                option.value = emp.id;
-                option.textContent = emp.name;
-                employeeSelect.appendChild(option);
-            });
+        // Set default date to today
+        attendanceDateInput.valueAsDate = new Date();
+        selectedDate = attendanceDateInput.value;
+        updateSelectedDateDisplay();
+
+        function updateSelectedDateDisplay() {
+            selectedDateDisplay.textContent = selectedDate ? `Attendance for: ${selectedDate}` : '';
         }
 
-        // Render attendance table
-        async function renderTable() {
+        function renderTable() {
             table.innerHTML = '';
             count = 0;
-            if (!selectedDate) return;
-            const res = await fetch(`/api/attendance?date=${encodeURIComponent(selectedDate)}`);
-            const attendanceData = await res.json();
+            const attendanceData = attendanceDataByDate[selectedDate] || [];
             attendanceData.forEach(({ name, status }) => {
                 count++;
                 const row = document.createElement('tr');
@@ -98,39 +119,27 @@
             });
         }
 
-        // Update selected date display
-        function updateSelectedDateDisplay() {
-            selectedDateDisplay.textContent = selectedDate ? `Attendance for: ${selectedDate}` : '';
-        }
-
-        dateForm.onsubmit = async function(e) {
+        dateForm.onsubmit = function(e) {
             e.preventDefault();
             selectedDate = attendanceDateInput.value;
             updateSelectedDateDisplay();
-            await renderTable();
+            renderTable();
         };
 
-        form.onsubmit = async function(e) {
+        form.onsubmit = function(e) {
             e.preventDefault();
-            const employee_id = employeeSelect.value;
+            const name = employeeSelect.value;
             const status = document.getElementById('attendanceStatus').value;
-            if (employee_id && selectedDate) {
-                await fetch('/api/attendance', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employee_id, date: selectedDate, status })
-                });
-                await renderTable();
+            if (name && selectedDate) {
+                if (!attendanceDataByDate[selectedDate]) attendanceDataByDate[selectedDate] = [];
+                attendanceDataByDate[selectedDate].push({ name, status });
+                renderTable();
                 form.reset();
                 employeeSelect.selectedIndex = 0;
             }
         };
 
-        // On page load
-        loadEmployees();
-        attendanceDateInput.valueAsDate = new Date();
-        selectedDate = attendanceDateInput.value;
-        updateSelectedDateDisplay();
+        // Render table on page load
         renderTable();
     </script>
 </body>
