@@ -30,6 +30,14 @@
                 <button type="submit" class="btn btn-secondary">Select Date</button>
             </div>
         </form>
+        <form id="addEmployeeForm" class="row g-3 mb-4 align-items-center">
+            <div class="col-md-8">
+                <input type="text" class="form-control" id="newEmployeeName" placeholder="Add new employee name">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-outline-primary w-100">Add Employee</button>
+            </div>
+        </form>
         <form id="attendanceForm" class="row g-3 mb-4">
             <div class="col-md-6">
                 <select class="form-select" id="employeeName" required>
@@ -92,6 +100,8 @@
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
         const form = document.getElementById('attendanceForm');
         const table = document.getElementById('attendanceTable');
+        const addEmployeeForm = document.getElementById('addEmployeeForm');
+        const newEmployeeNameInput = document.getElementById('newEmployeeName');
         let count = 0;
         let selectedDate = '';
         let attendanceDataByDate = JSON.parse(localStorage.getItem('attendanceDataByDate') || '{}');
@@ -187,6 +197,26 @@
                 employeeSelect.selectedIndex = 0;
                 alert('Attendance added successfully!');
             }
+        };
+
+        addEmployeeForm.onsubmit = function(e) {
+            e.preventDefault();
+            const newName = newEmployeeNameInput.value.trim();
+            if (!newName) {
+                alert('Please enter a name.');
+                return;
+            }
+            if (employees.includes(newName)) {
+                alert('Employee already exists.');
+                return;
+            }
+            employees.push(newName);
+            const option = document.createElement('option');
+            option.value = newName;
+            option.textContent = newName;
+            employeeSelect.appendChild(option);
+            newEmployeeNameInput.value = '';
+            alert('Employee added!');
         };
 
         document.getElementById('exportBtn').onclick = exportAttendanceCSV;
