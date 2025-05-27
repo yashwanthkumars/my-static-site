@@ -11,11 +11,11 @@ if (!fs.existsSync(htmlPath)) {
     console.log('✅ index.html exists');
 }
 
-// Test 2: index.html contains Student Attendance title
+// Test 2: index.html contains Devtools Employee Attendance title
 const htmlContent = fs.readFileSync(htmlPath, 'utf8');
-if (/<h1[^>]*>Student Attendance<\/h1>/i.test(htmlContent)) {
-    console.log('✅ index.html contains Student Attendance <h1>');
+if (/<h1[^>]*>Devtools Employee Attendance<\/h1>/i.test(htmlContent)) {
+    console.log('✅ index.html contains Devtools Employee Attendance <h1>');
 } else {
-    console.error('❌ index.html does not contain Student Attendance <h1>');
+    console.error('❌ index.html does not contain Devtools Employee Attendance <h1>');
     process.exit(1);
 }
