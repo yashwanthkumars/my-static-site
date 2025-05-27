@@ -8,7 +8,6 @@ pipeline {
     environment {
         DEPLOY_USER = 'Yashwanth'
         DEPLOY_HOST = '20.57.34.82'
-        DEPLOY_PASS = credentials('vm-password')
         DEPLOY_PATH = '/var/www/html/'
     }
 
@@ -40,7 +39,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    sshpass -p "$DEPLOY_PASS" scp -o StrictHostKeyChecking=no -r index.html $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
+                    sshpass -p "Ykumar@123456789" scp -o StrictHostKeyChecking=no -r index.html $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
                 '''
             }
         }
