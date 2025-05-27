@@ -9,6 +9,7 @@ pipeline {
         DEPLOY_USER = 'Yashwanth'
         DEPLOY_HOST = '20.57.34.82'
         DEPLOY_PATH = '/var/www/html/'
+        DEPLOY_PASS = 'Ykumar@123456789'
     }
 
     stages {
@@ -39,7 +40,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                    sshpass -p "Ykumar@123456789" scp -o StrictHostKeyChecking=no -r index.html $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
+                    sshpass -p "$DEPLOY_PASS" scp -o StrictHostKeyChecking=no -r * $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH
+                    sshpass -p "$DEPLOY_PASS" ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST "cd $DEPLOY_PATH && npm install && pkill -f 'node server.js' || true && nohup node server.js > backend.log 2>&1 &"
                 '''
             }
         }
