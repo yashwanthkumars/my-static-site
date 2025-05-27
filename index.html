@@ -63,9 +63,6 @@
         </table>
         <div class="mb-3 text-end">
             <button class="btn btn-outline-primary btn-sm me-2" id="exportBtn">Export</button>
-            <label class="btn btn-outline-secondary btn-sm mb-0">
-                Import <input type="file" id="importInput" accept="application/json" style="display:none;">
-            </label>
             <button class="btn btn-outline-success btn-sm ms-2" id="printBtn">Print</button>
         </div>
     </div>
@@ -108,39 +105,26 @@
             selectedDateDisplay.textContent = selectedDate ? `Attendance for: ${selectedDate}` : '';
         }
 
-        // Export attendance data as JSON
-        function exportAttendance() {
-            const dataStr = JSON.stringify(attendanceDataByDate, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
+        // Export attendance data as CSV
+        function exportAttendanceCSV() {
+            if (!selectedDate || !(attendanceDataByDate[selectedDate] && attendanceDataByDate[selectedDate].length)) {
+                alert('No attendance data to export for the selected date.');
+                return;
+            }
+            const attendanceData = attendanceDataByDate[selectedDate];
+            let csv = 'Name,Status\n';
+            attendanceData.forEach(({ name, status }) => {
+                csv += `"${name.replace(/"/g, '""')}","${status.replace(/"/g, '""')}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'attendance-data.json';
+            a.download = `attendance-${selectedDate}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }
-
-        // Import attendance data from JSON
-        function importAttendance(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = JSON.parse(evt.target.result);
-                    if (typeof data === 'object') {
-                        attendanceDataByDate = data;
-                        localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
-                        renderTable();
-                        alert('Attendance data imported successfully!');
-                    }
-                } catch (err) {
-                    alert('Invalid file format.');
-                }
-            };
-            reader.readAsText(file);
         }
 
         // Add summary row
@@ -205,19 +189,15 @@
             }
         };
 
-        // Add export/import/print buttons
+        // Add export/print buttons (no import)
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'mb-3 text-end';
         controlsDiv.innerHTML = `
-            <button class="btn btn-outline-primary btn-sm me-2" id="exportBtn">Export</button>
-            <label class="btn btn-outline-secondary btn-sm mb-0">
-                Import <input type="file" id="importInput" accept="application/json" style="display:none;">
-            </label>
+            <button class="btn btn-outline-primary btn-sm me-2" id="exportBtn">Export CSV</button>
             <button class="btn btn-outline-success btn-sm ms-2" id="printBtn">Print</button>
         `;
         document.querySelector('.container').insertBefore(controlsDiv, document.querySelector('#selectedDateDisplay'));
-        document.getElementById('exportBtn').onclick = exportAttendance;
-        document.getElementById('importInput').onchange = importAttendance;
+        document.getElementById('exportBtn').onclick = exportAttendanceCSV;
         document.getElementById('printBtn').onclick = function() {
             window.print();
         };
