@@ -14,37 +14,29 @@
         }
         .container {
             background: rgba(255,255,255,0.92);
-            border-radius: 24px;
+            border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-        }
-        h1 {
-            font-size: 3rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-        }
-        table {
-            margin-top: 2rem;
         }
     </style>
 </head>
 <body>
     <div class="container py-5">
         <h1 class="mb-4 text-center">Devtools Employee Attendance</h1>
-        <form id="dateForm" class="row g-3 mb-4 align-items-center justify-content-center">
+        <form id="dateForm" class="row g-3 mb-4 align-items-center">
             <div class="col-md-4">
                 <input type="date" class="form-control" id="attendanceDate" required>
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-secondary w-100">Select Date</button>
+            <div class="col-md-8">
+                <button type="submit" class="btn btn-secondary">Select Date</button>
             </div>
         </form>
-        <form id="attendanceForm" class="row g-3 mb-4 align-items-center justify-content-center">
-            <div class="col-md-5">
+        <form id="attendanceForm" class="row g-3 mb-4">
+            <div class="col-md-6">
                 <select class="form-select" id="employeeName" required>
                     <option value="" disabled selected>Select employee name</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <select class="form-select" id="attendanceStatus" required>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
@@ -69,6 +61,7 @@
         </table>
     </div>
     <script>
+        // Example employee list (replace with dynamic data if needed)
         const employees = [
             'Alice Johnson',
             'Bob Smith',
@@ -96,7 +89,7 @@
         const table = document.getElementById('attendanceTable');
         let count = 0;
         let selectedDate = '';
-        let attendanceDataByDate = {};
+        let attendanceDataByDate = JSON.parse(localStorage.getItem('attendanceDataByDate') || '{}');
 
         // Set default date to today
         attendanceDateInput.valueAsDate = new Date();
@@ -133,6 +126,7 @@
             if (name && selectedDate) {
                 if (!attendanceDataByDate[selectedDate]) attendanceDataByDate[selectedDate] = [];
                 attendanceDataByDate[selectedDate].push({ name, status });
+                localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
                 renderTable();
                 form.reset();
                 employeeSelect.selectedIndex = 0;
