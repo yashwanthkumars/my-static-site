@@ -40,18 +40,33 @@
         const form = document.getElementById('attendanceForm');
         const table = document.getElementById('attendanceTable');
         let count = 0;
+        let attendanceData = JSON.parse(localStorage.getItem('attendanceData') || '[]');
+
+        function renderTable() {
+            table.innerHTML = '';
+            count = 0;
+            attendanceData.forEach(({ name, status }) => {
+                count++;
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${count}</td><td>${name}</td><td>${status}</td>`;
+                table.appendChild(row);
+            });
+        }
+
         form.onsubmit = function(e) {
             e.preventDefault();
             const name = document.getElementById('studentName').value.trim();
             const status = document.getElementById('attendanceStatus').value;
             if (name) {
-                count++;
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${count}</td><td>${name}</td><td>${status}</td>`;
-                table.appendChild(row);
+                attendanceData.push({ name, status });
+                localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+                renderTable();
                 form.reset();
             }
         };
+
+        // Render table on page load
+        renderTable();
     </script>
 </body>
 </html>
