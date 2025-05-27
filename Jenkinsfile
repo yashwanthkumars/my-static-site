@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'node:18'  // Official Node.js Docker image
+            image 'node:18'  // Official Node.js Docker images
             args '-u root'   // Run as root to install sshpass
         }
     }
