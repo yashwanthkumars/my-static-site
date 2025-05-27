@@ -9,6 +9,14 @@
 <body>
     <div class="container py-5">
         <h1 class="mb-4 text-center">Student Attendance</h1>
+        <form id="dateForm" class="row g-3 mb-4 align-items-center">
+            <div class="col-md-4">
+                <input type="date" class="form-control" id="attendanceDate" required>
+            </div>
+            <div class="col-md-8">
+                <button type="submit" class="btn btn-secondary">Select Date</button>
+            </div>
+        </form>
         <form id="attendanceForm" class="row g-3 mb-4">
             <div class="col-md-6">
                 <input type="text" class="form-control" id="studentName" placeholder="Enter student name" required>
@@ -23,6 +31,7 @@
                 <button type="submit" class="btn btn-primary w-100">Add</button>
             </div>
         </form>
+        <div id="selectedDateDisplay" class="mb-3 text-center fw-bold"></div>
         <table class="table table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
@@ -37,14 +46,28 @@
         </table>
     </div>
     <script>
+        const dateForm = document.getElementById('dateForm');
+        const attendanceDateInput = document.getElementById('attendanceDate');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
         const form = document.getElementById('attendanceForm');
         const table = document.getElementById('attendanceTable');
         let count = 0;
-        let attendanceData = JSON.parse(localStorage.getItem('attendanceData') || '[]');
+        let selectedDate = '';
+        let attendanceDataByDate = JSON.parse(localStorage.getItem('attendanceDataByDate') || '{}');
+
+        // Set default date to today
+        attendanceDateInput.valueAsDate = new Date();
+        selectedDate = attendanceDateInput.value;
+        updateSelectedDateDisplay();
+
+        function updateSelectedDateDisplay() {
+            selectedDateDisplay.textContent = selectedDate ? `Attendance for: ${selectedDate}` : '';
+        }
 
         function renderTable() {
             table.innerHTML = '';
             count = 0;
+            const attendanceData = attendanceDataByDate[selectedDate] || [];
             attendanceData.forEach(({ name, status }) => {
                 count++;
                 const row = document.createElement('tr');
@@ -53,13 +76,21 @@
             });
         }
 
+        dateForm.onsubmit = function(e) {
+            e.preventDefault();
+            selectedDate = attendanceDateInput.value;
+            updateSelectedDateDisplay();
+            renderTable();
+        };
+
         form.onsubmit = function(e) {
             e.preventDefault();
             const name = document.getElementById('studentName').value.trim();
             const status = document.getElementById('attendanceStatus').value;
-            if (name) {
-                attendanceData.push({ name, status });
-                localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+            if (name && selectedDate) {
+                if (!attendanceDataByDate[selectedDate]) attendanceDataByDate[selectedDate] = [];
+                attendanceDataByDate[selectedDate].push({ name, status });
+                localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
                 renderTable();
                 form.reset();
             }
