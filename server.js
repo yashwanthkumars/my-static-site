@@ -3,6 +3,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
@@ -31,6 +32,30 @@ db.serialize(() => {
         status TEXT,
         FOREIGN KEY(employee_id) REFERENCES employees(id)
     )`);
+});
+
+// Serve static files (frontend)
+app.use(express.static(path.join(__dirname)));
+
+// Pre-populate employees if table is empty
+const defaultEmployees = [
+    'Alice Johnson',
+    'Bob Smith',
+    'Charlie Brown',
+    'David Lee',
+    'Eva Green',
+    'Yashwanth Kumar',
+    'Priya Patel',
+    'Ravi Kumar',
+    'Samantha Ray',
+    'Zara Ali'
+];
+db.all('SELECT COUNT(*) as count FROM employees', [], (err, rows) => {
+    if (!err && rows[0].count === 0) {
+        const stmt = db.prepare('INSERT INTO employees (name) VALUES (?)');
+        defaultEmployees.forEach(name => stmt.run(name));
+        stmt.finalize();
+    }
 });
 
 // Register employee

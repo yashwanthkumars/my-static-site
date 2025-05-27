@@ -61,27 +61,7 @@
         </table>
     </div>
     <script>
-        // Example employee list (replace with dynamic data if needed)
-        const employees = [
-            'Alice Johnson',
-            'Bob Smith',
-            'Charlie Brown',
-            'David Lee',
-            'Eva Green',
-            'Yashwanth Kumar',
-            'Priya Patel',
-            'Ravi Kumar',
-            'Samantha Ray',
-            'Zara Ali'
-        ];
         const employeeSelect = document.getElementById('employeeName');
-        employees.forEach(emp => {
-            const option = document.createElement('option');
-            option.value = emp;
-            option.textContent = emp;
-            employeeSelect.appendChild(option);
-        });
-
         const dateForm = document.getElementById('dateForm');
         const attendanceDateInput = document.getElementById('attendanceDate');
         const selectedDateDisplay = document.getElementById('selectedDateDisplay');
@@ -89,21 +69,27 @@
         const table = document.getElementById('attendanceTable');
         let count = 0;
         let selectedDate = '';
-        let attendanceDataByDate = JSON.parse(localStorage.getItem('attendanceDataByDate') || '{}');
 
-        // Set default date to today
-        attendanceDateInput.valueAsDate = new Date();
-        selectedDate = attendanceDateInput.value;
-        updateSelectedDateDisplay();
-
-        function updateSelectedDateDisplay() {
-            selectedDateDisplay.textContent = selectedDate ? `Attendance for: ${selectedDate}` : '';
+        // Fetch employee list from backend
+        async function loadEmployees() {
+            const res = await fetch('/api/employees');
+            const employees = await res.json();
+            employeeSelect.innerHTML = '<option value="" disabled selected>Select employee name</option>';
+            employees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = emp.name;
+                employeeSelect.appendChild(option);
+            });
         }
 
-        function renderTable() {
+        // Render attendance table
+        async function renderTable() {
             table.innerHTML = '';
             count = 0;
-            const attendanceData = attendanceDataByDate[selectedDate] || [];
+            if (!selectedDate) return;
+            const res = await fetch(`/api/attendance?date=${encodeURIComponent(selectedDate)}`);
+            const attendanceData = await res.json();
             attendanceData.forEach(({ name, status }) => {
                 count++;
                 const row = document.createElement('tr');
@@ -112,28 +98,39 @@
             });
         }
 
-        dateForm.onsubmit = function(e) {
+        // Update selected date display
+        function updateSelectedDateDisplay() {
+            selectedDateDisplay.textContent = selectedDate ? `Attendance for: ${selectedDate}` : '';
+        }
+
+        dateForm.onsubmit = async function(e) {
             e.preventDefault();
             selectedDate = attendanceDateInput.value;
             updateSelectedDateDisplay();
-            renderTable();
+            await renderTable();
         };
 
-        form.onsubmit = function(e) {
+        form.onsubmit = async function(e) {
             e.preventDefault();
-            const name = employeeSelect.value;
+            const employee_id = employeeSelect.value;
             const status = document.getElementById('attendanceStatus').value;
-            if (name && selectedDate) {
-                if (!attendanceDataByDate[selectedDate]) attendanceDataByDate[selectedDate] = [];
-                attendanceDataByDate[selectedDate].push({ name, status });
-                localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
-                renderTable();
+            if (employee_id && selectedDate) {
+                await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employee_id, date: selectedDate, status })
+                });
+                await renderTable();
                 form.reset();
                 employeeSelect.selectedIndex = 0;
             }
         };
 
-        // Render table on page load
+        // On page load
+        loadEmployees();
+        attendanceDateInput.valueAsDate = new Date();
+        selectedDate = attendanceDateInput.value;
+        updateSelectedDateDisplay();
         renderTable();
     </script>
 </body>
