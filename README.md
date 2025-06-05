@@ -4,7 +4,7 @@
 
 This is a pure static web page for employee attendance tracking. No backend or database is required. All data is stored in memory and will be lost on page reload.
 
-## Usage
+## Usage  gdt
 - Open `index.html` in your browser.
 - Select a date, employee, and status, then click Add.
 - Attendance for the selected date will be shown in the table below.
