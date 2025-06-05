@@ -146,12 +146,51 @@
             summaryDiv.innerHTML = `<div class="mt-2 mb-2 text-center"><span class="badge bg-success">Present: ${present}</span> <span class="badge bg-danger ms-2">Absent: ${absent}</span></div>`;
         }
 
-        function renderTable() {
+        // Fetch employee list from backend
+        async function loadEmployees() {
+            const res = await fetch('/api/employees');
+            const employeesList = await res.json();
+            employeeSelect.innerHTML = '<option value="" disabled selected>Select employee name</option>';
+            employeesList.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = emp.name;
+                employeeSelect.appendChild(option);
+            });
+        }
+
+        // Add new employee to backend
+        addEmployeeForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const newName = newEmployeeNameInput.value.trim();
+            if (!newName) {
+                alert('Please enter a name.');
+                return;
+            }
+            // Check if already exists in dropdown
+            if ([...employeeSelect.options].some(opt => opt.textContent === newName)) {
+                alert('Employee already exists.');
+                return;
+            }
+            await fetch('/api/employees', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName })
+            });
+            await loadEmployees();
+            newEmployeeNameInput.value = '';
+            alert('Employee added!');
+        };
+
+        // Render attendance table from backend
+        async function renderTable() {
             table.innerHTML = '';
             count = 0;
-            const attendanceData = attendanceDataByDate[selectedDate] || [];
+            if (!selectedDate) return;
+            const res = await fetch(`/api/attendance?date=${encodeURIComponent(selectedDate)}`);
+            const attendanceData = await res.json();
             renderSummary(attendanceData);
-            attendanceData.forEach(({ name, status }, idx) => {
+            attendanceData.forEach(({ id, name, status }, idx) => {
                 count++;
                 const row = document.createElement('tr');
                 row.innerHTML = `<td>${count}</td><td>${name}</td><td>${status}</td>`;
@@ -159,10 +198,9 @@
                 const deleteCell = document.createElement('td');
                 deleteCell.innerHTML = `<button class="btn btn-outline-danger btn-sm" title="Delete"><span style="font-size:1.2em;">&#128465;</span></button>`;
                 deleteCell.style.textAlign = 'center';
-                deleteCell.querySelector('button').onclick = function() {
+                deleteCell.querySelector('button').onclick = async function() {
                     if (confirm('Are you sure you want to delete this entry?')) {
-                        attendanceData.splice(idx, 1);
-                        localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
+                        await fetch(`/api/attendance/${id}`, { method: 'DELETE' });
                         renderTable();
                     }
                 };
@@ -178,45 +216,28 @@
             renderTable();
         };
 
-        form.onsubmit = function(e) {
+        form.onsubmit = async function(e) {
             e.preventDefault();
-            const name = employeeSelect.value;
+            const employee_id = employeeSelect.value;
             const status = document.getElementById('attendanceStatus').value;
-            if (name && selectedDate) {
+            if (employee_id && selectedDate) {
                 // Prevent duplicate entry for same employee on same date
-                const attendanceData = attendanceDataByDate[selectedDate] || [];
-                if (attendanceData.some(e => e.name === name)) {
+                const res = await fetch(`/api/attendance?date=${encodeURIComponent(selectedDate)}`);
+                const attendanceData = await res.json();
+                if (attendanceData.some(e => e.name === employeeSelect.options[employeeSelect.selectedIndex].textContent)) {
                     alert('Attendance for this employee already exists for the selected date.');
                     return;
                 }
-                if (!attendanceDataByDate[selectedDate]) attendanceDataByDate[selectedDate] = [];
-                attendanceDataByDate[selectedDate].push({ name, status });
-                localStorage.setItem('attendanceDataByDate', JSON.stringify(attendanceDataByDate));
-                renderTable();
+                await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employee_id, date: selectedDate, status })
+                });
+                await renderTable();
                 form.reset();
                 employeeSelect.selectedIndex = 0;
                 alert('Attendance added successfully!');
             }
-        };
-
-        addEmployeeForm.onsubmit = function(e) {
-            e.preventDefault();
-            const newName = newEmployeeNameInput.value.trim();
-            if (!newName) {
-                alert('Please enter a name.');
-                return;
-            }
-            if (employees.includes(newName)) {
-                alert('Employee already exists.');
-                return;
-            }
-            employees.push(newName);
-            const option = document.createElement('option');
-            option.value = newName;
-            option.textContent = newName;
-            employeeSelect.appendChild(option);
-            newEmployeeNameInput.value = '';
-            alert('Employee added!');
         };
 
         document.getElementById('exportBtn').onclick = exportAttendanceCSV;
@@ -224,7 +245,11 @@
             window.print();
         };
 
-        // Render table on page load
+        // On page load
+        loadEmployees();
+        attendanceDateInput.valueAsDate = new Date();
+        selectedDate = attendanceDateInput.value;
+        updateSelectedDateDisplay();
         renderTable();
     </script>
 </body>
